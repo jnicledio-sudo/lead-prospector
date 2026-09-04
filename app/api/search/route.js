@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { searchBusinesses } from "@/lib/googlePlaces";
-import { findInstagramProfile } from "@/lib/instagramMatcher";
 
 export async function POST(req) {
   try {
@@ -14,7 +13,7 @@ export async function POST(req) {
       );
     }
 
-    // 1. Buscar empresas no Google Places / Provedor
+    // Buscar empresas (Instagram já vem integrado no motor de busca)
     const businesses = await searchBusinesses({
       niche,
       city,
@@ -22,27 +21,10 @@ export async function POST(req) {
       onlyWithoutWebsite,
     });
 
-    // 2. Enriquecer com cruzamento do Instagram em paralelo
-    const enrichedLeads = await Promise.all(
-      businesses.map(async (business) => {
-        const instagramData = await findInstagramProfile({
-          name: business.name,
-          city: business.city,
-          neighborhood: business.neighborhood,
-          phone: business.phone,
-        });
-
-        return {
-          ...business,
-          instagram: instagramData,
-        };
-      })
-    );
-
     return NextResponse.json({
       success: true,
-      count: enrichedLeads.length,
-      leads: enrichedLeads,
+      count: businesses.length,
+      leads: businesses,
     });
   } catch (error) {
     console.error("Erro na rota de busca:", error);
