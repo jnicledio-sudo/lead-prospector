@@ -4,7 +4,7 @@ import { searchBusinesses } from "@/lib/googlePlaces";
 export async function POST(req) {
   try {
     const body = await req.json();
-    const { niche, city, neighborhood, onlyWithoutWebsite = true } = body;
+    const { niche, country, city, neighborhood, onlyWithoutWebsite = true } = body;
 
     if (!niche || !city) {
       return NextResponse.json(
@@ -16,6 +16,7 @@ export async function POST(req) {
     // Buscar empresas (Instagram já vem integrado no motor de busca)
     const businesses = await searchBusinesses({
       niche,
+      country,
       city,
       neighborhood,
       onlyWithoutWebsite,

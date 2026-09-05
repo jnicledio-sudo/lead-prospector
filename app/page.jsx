@@ -16,14 +16,14 @@ export default function HomePage() {
   const [filterType, setFilterType] = useState("ALL"); // ALL, NO_WEBSITE, WITH_INSTA
   const [hasSearched, setHasSearched] = useState(false);
 
-  const handleSearch = async ({ niche, city, neighborhood, onlyWithoutWebsite }) => {
+  const handleSearch = async ({ niche, country, city, neighborhood, onlyWithoutWebsite }) => {
     setIsLoading(true);
     setHasSearched(true);
     try {
       const res = await fetch("/api/search", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ niche, city, neighborhood, onlyWithoutWebsite }),
+        body: JSON.stringify({ niche, country, city, neighborhood, onlyWithoutWebsite }),
       });
       const data = await res.json();
       if (data.success && Array.isArray(data.leads)) {

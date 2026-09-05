@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Search, MapPin, Building2, Filter, Loader2, Sparkles } from "lucide-react";
+import { Search, MapPin, Building2, Filter, Loader2, Globe } from "lucide-react";
 
 const POPULAR_NICHES = [
   "Barbearias",
@@ -14,8 +14,17 @@ const POPULAR_NICHES = [
   "Pet Shops",
 ];
 
+const COUNTRIES = [
+  { code: "MZ", name: "Moçambique", flag: "🇲🇿" },
+  { code: "AO", name: "Angola", flag: "🇦🇴" },
+  { code: "PT", name: "Portugal", flag: "🇵🇹" },
+  { code: "BR", name: "Brasil", flag: "🇧🇷" },
+  { code: "OTHER", name: "Outro País", flag: "🌍" },
+];
+
 export default function SearchBar({ onSearch, isLoading }) {
   const [niche, setNiche] = useState("");
+  const [country, setCountry] = useState("Moçambique");
   const [city, setCity] = useState("");
   const [neighborhood, setNeighborhood] = useState("");
   const [onlyWithoutWebsite, setOnlyWithoutWebsite] = useState(true);
@@ -26,7 +35,7 @@ export default function SearchBar({ onSearch, isLoading }) {
       alert("Por favor, preencha pelo menos o Nicho e a Cidade.");
       return;
     }
-    onSearch({ niche, city, neighborhood, onlyWithoutWebsite });
+    onSearch({ niche, country, city, neighborhood, onlyWithoutWebsite });
   };
 
   const handleQuickNiche = (selectedNiche) => {
@@ -36,21 +45,40 @@ export default function SearchBar({ onSearch, isLoading }) {
   return (
     <div className="bg-slate-800/80 border border-slate-700/60 rounded-2xl p-4 sm:p-6 shadow-xl backdrop-blur-sm">
       <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           {/* Campo de Nicho */}
           <div>
             <label className="block text-xs font-semibold text-slate-300 mb-1.5 flex items-center gap-1.5">
               <Building2 className="w-3.5 h-3.5 text-emerald-400" />
-              Nicho / Ramo de Atividade
+              Nicho / Ramo
             </label>
             <input
               type="text"
               value={niche}
               onChange={(e) => setNiche(e.target.value)}
-              placeholder="Ex: Barbearias, Clínicas, Oficinas..."
+              placeholder="Ex: Barbearias, Clínicas..."
               className="w-full bg-slate-900/90 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all"
               required
             />
+          </div>
+
+          {/* Campo de País */}
+          <div>
+            <label className="block text-xs font-semibold text-slate-300 mb-1.5 flex items-center gap-1.5">
+              <Globe className="w-3.5 h-3.5 text-emerald-400" />
+              País
+            </label>
+            <select
+              value={country}
+              onChange={(e) => setCountry(e.target.value)}
+              className="w-full bg-slate-900/90 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all cursor-pointer"
+            >
+              {COUNTRIES.map((c) => (
+                <option key={c.code} value={c.name}>
+                  {c.flag} {c.name}
+                </option>
+              ))}
+            </select>
           </div>
 
           {/* Campo de Cidade */}
@@ -63,7 +91,7 @@ export default function SearchBar({ onSearch, isLoading }) {
               type="text"
               value={city}
               onChange={(e) => setCity(e.target.value)}
-              placeholder="Ex: Luanda, Maputo, Lisboa..."
+              placeholder="Ex: Maputo, Luanda, Lisboa..."
               className="w-full bg-slate-900/90 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all"
               required
             />
@@ -79,7 +107,7 @@ export default function SearchBar({ onSearch, isLoading }) {
               type="text"
               value={neighborhood}
               onChange={(e) => setNeighborhood(e.target.value)}
-              placeholder="Ex: Talatona, Maianga, Polana..."
+              placeholder="Ex: Boane, Polana, Talatona..."
               className="w-full bg-slate-900/90 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all"
             />
           </div>
@@ -128,7 +156,7 @@ export default function SearchBar({ onSearch, isLoading }) {
             {isLoading ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin" />
-                <span>Buscando & Cruzando Dados...</span>
+                <span>Buscando Empresas Reais...</span>
               </>
             ) : (
               <>

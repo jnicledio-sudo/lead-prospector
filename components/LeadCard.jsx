@@ -9,9 +9,8 @@ import {
   ExternalLink,
   Sparkles,
   MessageCircle,
-  CheckCircle2,
-  AlertTriangle,
   XCircle,
+  Search,
 } from "lucide-react";
 
 // Ícone limpo e padronizado do Instagram em SVG
@@ -36,8 +35,19 @@ function InstagramIcon({ className = "w-3.5 h-3.5" }) {
 export default function LeadCard({ lead, onGeneratePitch }) {
   const [status, setStatus] = useState("NOVO");
 
-  const cleanPhone = lead.rawPhone || lead.phone.replace(/\D/g, "");
-  const whatsappUrl = cleanPhone ? `https://wa.me/${cleanPhone}` : null;
+  // Validar se o telefone é real e tem pelo menos 8 dígitos
+  const cleanPhone = (lead.rawPhone || "").replace(/\D/g, "");
+  const hasValidPhone = cleanPhone.length >= 8;
+  const whatsappUrl = hasValidPhone ? `https://wa.me/${cleanPhone}` : null;
+
+  // URL segura para o Instagram: se não for 100% verificado, faz busca no Google pelo perfil real
+  // Isso EVITA o erro 404 de "Ocorreu um erro" no app do Instagram
+  const safeInstagramUrl =
+    lead.instagram?.url && lead.instagram?.confidence === "VERIFICADO"
+      ? lead.instagram.url
+      : `https://www.google.com/search?q=${encodeURIComponent(`site:instagram.com "${lead.name}" ${lead.city}`)}`;
+
+  const googleSearchUrl = `https://www.google.com/search?q=${encodeURIComponent(`"${lead.name}" ${lead.city} telefone contacto`)}`;
 
   return (
     <div className="bg-slate-800/60 border border-slate-700/70 rounded-2xl p-4 sm:p-5 hover:border-slate-600 transition-all flex flex-col justify-between shadow-lg relative overflow-hidden group">
@@ -91,47 +101,39 @@ export default function LeadCard({ lead, onGeneratePitch }) {
             <Phone className="w-3.5 h-3.5 text-emerald-400" />
             Contacto:
           </span>
-          <span className="font-semibold text-slate-200">{lead.phone || "Não informado"}</span>
+          {hasValidPhone ? (
+            <span className="font-semibold text-slate-200">{lead.phone}</span>
+          ) : (
+            <a
+              href={googleSearchUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-slate-400 hover:text-emerald-300 underline flex items-center gap-1 text-[11px]"
+            >
+              Localizar no Google
+              <ExternalLink className="w-2.5 h-2.5" />
+            </a>
+          )}
         </div>
 
-        {/* Instagram e Score de Confiança */}
-        {lead.instagram && (
-          <div className="flex items-center justify-between text-xs pt-1.5 border-t border-slate-800">
-            <span className="text-slate-400 flex items-center gap-1.5">
-              <InstagramIcon className="w-3.5 h-3.5 text-pink-400" />
-              Instagram:
-            </span>
-            <div className="flex items-center gap-2">
-              <a
-                href={lead.instagram.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-pink-400 hover:text-pink-300 font-medium underline flex items-center gap-1"
-              >
-                {lead.instagram.handle}
-                <ExternalLink className="w-2.5 h-2.5" />
-              </a>
-
-              {/* Badge de Confiança do Match */}
-              <span
-                title={lead.instagram.confidenceReason}
-                className={`text-[10px] px-1.5 py-0.5 rounded font-semibold border ${
-                  lead.instagram.confidence === "ALTA"
-                    ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/30"
-                    : lead.instagram.confidence === "MEDIA"
-                    ? "bg-amber-500/20 text-amber-300 border-amber-500/30"
-                    : "bg-slate-700 text-slate-400 border-slate-600"
-                }`}
-              >
-                {lead.instagram.confidence === "ALTA"
-                  ? "✓ 95% Confiança"
-                  : lead.instagram.confidence === "MEDIA"
-                  ? "~ Moderado"
-                  : "? Verificar"}
-              </span>
-            </div>
+        {/* Instagram Seguro */}
+        <div className="flex items-center justify-between text-xs pt-1.5 border-t border-slate-800">
+          <span className="text-slate-400 flex items-center gap-1.5">
+            <InstagramIcon className="w-3.5 h-3.5 text-pink-400" />
+            Instagram:
+          </span>
+          <div className="flex items-center gap-2">
+            <a
+              href={safeInstagramUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-pink-400 hover:text-pink-300 font-medium underline flex items-center gap-1"
+            >
+              <span>Ver Perfil</span>
+              <ExternalLink className="w-2.5 h-2.5" />
+            </a>
           </div>
-        )}
+        </div>
       </div>
 
       {/* Barra de Status & Ações Rápidas */}
@@ -142,7 +144,7 @@ export default function LeadCard({ lead, onGeneratePitch }) {
           <select
             value={status}
             onChange={(e) => setStatus(e.target.value)}
-            className="bg-slate-900 border border-slate-700 text-xs text-slate-200 rounded-lg px-2 py-1 focus:outline-none focus:border-emerald-500"
+            className="bg-slate-900 border border-slate-700 text-xs text-slate-200 rounded-lg px-2 py-1 focus:outline-none focus:border-emerald-500 cursor-pointer"
           >
             <option value="NOVO">⚪ Novo</option>
             <option value="CONTACTADO">🟡 Contactado</option>
@@ -156,13 +158,13 @@ export default function LeadCard({ lead, onGeneratePitch }) {
           {/* Botão de IA Pitch */}
           <button
             onClick={() => onGeneratePitch(lead)}
-            className="flex items-center justify-center gap-1.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs font-bold py-2.5 px-3 rounded-xl shadow transition active:scale-95"
+            className="flex items-center justify-center gap-1.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs font-bold py-2.5 px-3 rounded-xl shadow transition active:scale-95 cursor-pointer"
           >
             <Sparkles className="w-3.5 h-3.5" />
             Gerar Pitch IA
           </button>
 
-          {/* Botão Direto WhatsApp */}
+          {/* Botão WhatsApp ou Busca de Contacto */}
           {whatsappUrl ? (
             <a
               href={whatsappUrl}
@@ -175,11 +177,13 @@ export default function LeadCard({ lead, onGeneratePitch }) {
             </a>
           ) : (
             <a
-              href={`tel:${lead.phone}`}
+              href={googleSearchUrl}
+              target="_blank"
+              rel="noopener noreferrer"
               className="flex items-center justify-center gap-1.5 bg-slate-700/50 hover:bg-slate-700 text-slate-300 text-xs font-semibold py-2.5 px-3 rounded-xl transition"
             >
-              <Phone className="w-3.5 h-3.5" />
-              Ligar
+              <Search className="w-3.5 h-3.5" />
+              Buscar Contacto
             </a>
           )}
         </div>
